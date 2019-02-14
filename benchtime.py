@@ -1,8 +1,10 @@
 #!/bin/env python3
 
 import datetime
+import json
 
 statistics = {}
+
 
 def benchmethod(func):
     def method(*args, **kwargs):
@@ -14,22 +16,25 @@ def benchmethod(func):
         if name not in statistics:
             statistics[name] = {
                 "docstring": func.__doc__,
-                "durations": [
-                    duration.total_seconds()
-                ]
+                "durations": [duration.total_seconds()],
             }
         else:
-            statistics[name]['durations'].append(
-                duration.total_seconds()
-            )
+            statistics[name]["durations"].append(duration.total_seconds())
         return result
+
     return method
 
+
 def report():
-    
+
     res = ""
     for key in statistics:
         data = statistics[key]
-        s = "{}\n{} {}\n".format(key, sum(data['durations'])/len(data['durations']), data['docstring'])
+        durations = data["durations"]
+        data["min"] = min(durations)
+        data["max"] = max(durations)
+        data["average"] = sum(durations) / len(durations)
+        s = "{}\n{} {}\n".format(key, data["average"], data["docstring"])
         res += s
-    print(res)   
+    res = json.dumps(statistics)
+    print(res)
